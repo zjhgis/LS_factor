@@ -22,7 +22,39 @@ def get_extent(filename):
     # 关闭栅格数据文件
     ds = None
     return xmin,ymin,xmax,ymax
+    
+def whether_xiangjiao(n,e, border_shp ):
+    # 创建格网多边形
+    ring = ogr.Geometry(ogr.wkbLinearRing)
+    ring.AddPoint(e, n)
+    ring.AddPoint(e+1, n)
+    ring.AddPoint(e+1, n+1)
+    ring.AddPoint(e, n+1)
+    ring.AddPoint(e, n)  # 闭合多边形
 
+    poly = ogr.Geometry(ogr.wkbPolygon)
+    poly.AddGeometry(ring)
+
+    input_ds = ogr.Open(border_shp)
+    if input_ds is None:
+        print("无法打开输入shapefile文件")
+        return
+
+    # 获取输入shapefile的第一个图层
+    input_layer = input_ds.GetLayer()
+
+    # 获取输入shapefile的空间参考信息
+    source_srs = input_layer.GetSpatialRef()
+
+    # 判断格网是否与多边形相交或在多边形内部
+    input_layer.SetSpatialFilter(poly)
+
+    for feature in input_layer:
+        if feature.geometry().Intersects(poly):
+            return True
+        else:
+            return False
+            
 def ls_factor(N_min, N_max, E_min, E_max):
     for n in range(N_min, N_max):
         for e in range(E_min, E_max):
