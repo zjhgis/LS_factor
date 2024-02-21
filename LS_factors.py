@@ -190,24 +190,25 @@ def zip_file(folder_path, zip_path):
         zipfile = os.path.join(zip_path, file)
         if os.path.exists(zipfile):
             continue 
-
-        try:
-            # 打开栅格数据文件
-            dataset = gdal.Open(file_path, gdal.GA_ReadOnly)
-            
-            # 如果打开成功，则 dataset 不为 None
-            if dataset is None:
-                print(f"无法打开文件: {file_path}")
-                # 如果无法打开，可以选择删除该文件
-                os.remove(file_path)
-            else:
-                print(f"成功打开文件: {file_path}")
+        if whether_xiangjiao(file_path):
+            filename = file.split('.')[0]
+            try:
+                # 打开栅格数据文件
+                dataset = gdal.Open(file_path, gdal.GA_ReadOnly)
                 
-                zip_cmd = 'gdal_translate -of GTiff -co COMPRESS=DEFLATE -co ZLEVEL=9 -co PREDICTOR=2 -co TILED=YES %s %s'%(file_path,zipfile)
-                os.system(zip_cmd)
-            dataset = None  # 释放资源
-        except Exception as e:
-            print(f"出现错误: {e}")
+                # 如果打开成功，则 dataset 不为 None
+                if dataset is None:
+                    print(f"无法打开文件: {file_path}")
+                    # 如果无法打开，可以选择删除该文件
+                    os.remove(file_path)
+                else:
+                    print(f"成功打开文件: {file_path}")
+                    
+                    zip_cmd = 'gdal_translate -of GTiff -co COMPRESS=DEFLATE -co ZLEVEL=9 -co PREDICTOR=2 -co TILED=YES %s %s'%(file_path,zipfile)
+                    os.system(zip_cmd)
+                dataset = None  # 释放资源
+            except Exception as e:
+                print(f"出现错误: {e}")
     
     
 if __name__ == '__main__':
